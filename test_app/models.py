@@ -17,7 +17,7 @@ class Lesson(models.Model):
     )
     duration = models.PositiveSmallIntegerField(
         choices=LessonDuration.choices,
-        default=LessonDuration.MINUTES_45,
+        default=LessonDuration.MINUTES_45.value,
         help_text='Продолжительность урока в минутах',
     )
 
