@@ -5,4 +5,4 @@ class TestAppConfig(AppConfig):
     name = 'test_app'
 
     def ready(self):
-        pass
+        import test_app.signals  # noqa
