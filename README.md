@@ -37,6 +37,7 @@ POSTGRES_PORT=5432
 RABBITMQ_USER=rabbitmq
 RABBITMQ_PASS=rabbitmqpass
 
+CELERY_BROKER_URL=amqp://rabbitmq:rabbitmq@rabbit:5672//
 ```
 
 ### 2. Запуск:

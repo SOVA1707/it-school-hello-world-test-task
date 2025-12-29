@@ -6,7 +6,6 @@ from .tasks import handle_lesson_created, handle_lesson_updated, handle_lesson_d
 
 @receiver(post_save, sender=Lesson)
 def handle_lesson_save(sender, instance, created, **kwargs):
-    print('AAAAAAAAAA')
     if created:
         handle_lesson_created.delay(instance.id)
     else:

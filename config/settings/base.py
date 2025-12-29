@@ -124,7 +124,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # CELERY
-CELERY_BROKER_URL = 'amqp://rabbitmq:rabbitmq@rabbit:5672//'
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'amqp://rabbitmq:rabbitmq@rabbit:5672//')
 CELERY_RESULT_BACKEND = 'rpc://'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
