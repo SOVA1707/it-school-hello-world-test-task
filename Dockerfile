@@ -1,24 +1,25 @@
 FROM python:3.14
 
-RUN apt-get update  \
-    && apt-get install -y --no-install-recommends gcc \
-    && rm -rf /var/lib/apt/lists/*
-
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN pip install poetry
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY poetry.lock pyproject.toml ./
-
-RUN poetry install --only=main --no-root
+RUN pip install poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --only=main --no-root
 
 COPY . .
 
-RUN poetry run python manage.py collectstatic --noinput
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8080"]

@@ -9,9 +9,34 @@ services:
       - .env
     depends_on:
       - db
+      - rabbit
+
+  celery:
+    build: .
+    command: poetry run celery -A test_app worker
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - rabbit
+    volumes:
+      - .:/app
+
+  rabbit:
+    image: rabbitmq:3-management
+    env_file:
+      - .env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
 
   db:
     image: postgres:15
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:

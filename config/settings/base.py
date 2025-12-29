@@ -121,3 +121,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# CELERY
+CELERY_BROKER_URL = 'amqp://rabbitmq:rabbitmq@rabbit:5672//'
+CELERY_RESULT_BACKEND = 'rpc://'  # или redis, если будете использовать
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'

@@ -16,4 +16,5 @@ poetry run python manage.py migrate --noinput
 echo "✅ Migrations applied successfully."
 
 poetry run python manage.py collectstatic --noinput
-exec poetry run python manage.py runserver 0.0.0.0:8080
+
+exec "$@"

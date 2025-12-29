@@ -11,6 +11,7 @@ def handle_lesson_save(sender, instance, created, **kwargs):
     else:
         print(f"✏️ Урок '{instance.title}' был обновлён!")
 
+
 @receiver(post_delete, sender=Lesson)
 def handle_lesson_delete(sender, instance, **kwargs):
     print(f"🗑️ Урок '{instance.title}' был удалён!")
