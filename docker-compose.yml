@@ -1,48 +1,92 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  test_app:
-    build: .
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - rabbit
-
-  celery:
-    build: .
-    command: poetry run celery -A test_app worker
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - rabbit
-
-  rabbit:
-    image: rabbitmq:3-management
-    env_file:
-      - .env
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-
   db:
-    image: postgres:15
-    env_file:
-      - .env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+    image: postgres:16
+    container_name: it-school-db
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: it-school-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: it-school-web
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.local
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://
+    env_file:
+      - .env
+
+  celery-worker:
+    build: .
+    container_name: it-school-celery-worker
+    command: celery -A config.celery worker
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.local
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://
+    env_file:
+      - .env
+
+  celery-beat:
+    build: .
+    container_name: it-school-celery-beat
+    command: celery -A config.celery beat --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.local
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://
+    env_file:
+      - .env
 
 volumes:
   postgres_data:

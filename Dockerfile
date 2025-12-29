@@ -1,7 +1,7 @@
-FROM python:3.14
+FROM python:3.14-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
@@ -10,15 +10,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY poetry.lock pyproject.toml ./
+
 RUN pip install poetry && \
     poetry config virtualenvs.create false && \
-    poetry install --only=main --no-root
+    poetry install --no-root
 
 COPY . .
 
-RUN chmod +x /entrypoint.sh
-
-EXPOSE 8080
-
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8080"]
+ENTRYPOINT ["/app/entrypoint.sh"]

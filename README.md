@@ -25,21 +25,32 @@
 Скопируйте пример:
 ```
 DEBUG=True
-SECRET_KEY=super-secret-DN*M!)@MN803djn1-key7578299
+SECRET_KEY=your-super-secret-key
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 POSTGRES_DB=db
 POSTGRES_USER=root
-POSTGRES_PASSWORD=123456
+POSTGRES_PASSWORD=psqlpass
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
+
+RABBITMQ_USER=rabbitmq
+RABBITMQ_PASS=rabbitmqpass
+
 ```
 
-### 2. Сделайте файл `entrypoint.sh` исполняемым:
-`chmod +x entrypoint.sh`
-
-### 3. Запуск:
+### 2. Запуск:
 ```
 docker compose build
 docker compose up
+```
+
+### 3. Создайте суперпользователя Django:
+```
+docker-compose exec web python manage.py createsuperuser
+```
+
+### 4. Зайдите в административную панель Django в браузере
+```
+http://localhost:8000/admin
 ```
