@@ -16,7 +16,6 @@ RUN pip install poetry && \
 
 COPY . .
 
-COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080

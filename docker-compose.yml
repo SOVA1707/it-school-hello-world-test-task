@@ -19,8 +19,6 @@ services:
     depends_on:
       - db
       - rabbit
-    volumes:
-      - .:/app
 
   rabbit:
     image: rabbitmq:3-management
